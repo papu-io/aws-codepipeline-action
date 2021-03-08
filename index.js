@@ -21,7 +21,7 @@ try {
         if (err) {
             console.log(err, err.stack);
         } else {
-            setInterval(function () {
+            let runEveryTenSeconds = setInterval(function () {
                 let params = {
                     pipelineExecutionId: response.pipelineExecutionId,
                     pipelineName: pipelineName
@@ -33,15 +33,18 @@ try {
                         console.log("Waiting...")
                     } else if(currentStatus === "Succeeded") {
                         console.log("Finished!")
-                        return true
+                        clear()
                     } else {
                         core.setFailed(`Failed with status: ${currentStatus}`)
-                        return false
+                        clear()
                     }
                 })
 
             }, 10000);
-            console.log(response);
+
+            function clear() {
+                clearInterval(runEveryTenSeconds);
+            }
         }
     });
 } catch (error) {
