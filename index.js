@@ -17,13 +17,33 @@ try {
     name: pipelineName,
   };
 
-  codepipeline.startPipelineExecution(pipeline, function (err, okData) {
-    if (err) {
-      console.log(err, err.stack);
-    } else {
-      console.log(okData);
-    }
-  });
+    codepipeline.startPipelineExecution(pipeline, function (err, response) {
+        if (err) {
+            console.log(err, err.stack);
+        } else {
+            setInterval(function () {
+                let params = {
+                    pipelineExecutionId: response.pipelineExecutionId,
+                    pipelineName: pipelineName
+                }
+                codepipeline.getPipelineExecution(params, function (err, resp) {
+                    let currentStatus = resp.pipelineExecution.status;
+
+                    if (currentStatus === "InProgress") {
+                        console.log("Waiting...")
+                    } else if(currentStatus === "Succeeded") {
+                        console.log("Finished!")
+                        return true
+                    } else {
+                        core.setFailed(`Failed with status: ${currentStatus}`)
+                        return false
+                    }
+                })
+
+            }, 10000);
+            console.log(response);
+        }
+    });
 } catch (error) {
-  core.setFailed(error.message);
+    core.setFailed(error.message);
 }
